@@ -43,8 +43,8 @@ echo "── Step 2: Merge CJK glyphs (Resource Han Rounded, scale ${CJK_SCALE})
 CJK_DIR=$(mktemp -d)
 trap "rm -rf '$CJK_DIR'" EXIT
 
-CJK_REGULAR="font-data/ResourceHanRoundedCN-Light.ttf"
-CJK_BOLD="font-data/ResourceHanRoundedCN-Regular.ttf"
+CJK_REGULAR="font-data/ResourceHanRoundedCN-Regular.ttf"
+CJK_BOLD="font-data/ResourceHanRoundedCN-Bold.ttf"
 
 PIDS=()
 for i in "${!STYLES[@]}"; do
