@@ -133,60 +133,6 @@ def merge_cjk(target_path, cjk_source_path, output_path, embolden=0, cjk_scale=1
 
     print("Processed %d glyphs" % fixed)
 
-    # ------------------------------------------------------------------
-    # Height normalization: scale up shorter CJK glyphs so they match
-    # the typical body height, preventing some chars (e.g. 理 研 想)
-    # from appearing too small on low-DPI / non-retina screens.
-    # ------------------------------------------------------------------
-    CJK_IDEOGRAPH_RANGE = (0x4E00, 0x9FFF)
-    cjk_heights = []
-    for cp in range(CJK_IDEOGRAPH_RANGE[0], CJK_IDEOGRAPH_RANGE[1] + 1):
-        if cp in target and target[cp].isWorthOutputting():
-            bbox = target[cp].boundingBox()
-            h = bbox[3] - bbox[1]
-            if h > 200:
-                cjk_heights.append(h)
-
-    if cjk_heights:
-        cjk_heights.sort()
-        ref_height = cjk_heights[len(cjk_heights) * 3 // 4]  # P75
-        norm_threshold = ref_height * 0.97
-        min_height = ref_height * 0.50  # don't touch structurally short chars
-        normalized = 0
-
-        for start, end in ALL_RANGES:
-            for cp in range(start, end + 1):
-                if cp in target and target[cp].isWorthOutputting():
-                    glyph = target[cp]
-                    bbox = glyph.boundingBox()
-                    h = bbox[3] - bbox[1]
-                    if h < norm_threshold and h > min_height:
-                        s = ref_height / h
-                        cx = (bbox[0] + bbox[2]) / 2.0
-                        cy = (bbox[1] + bbox[3]) / 2.0
-                        glyph.transform((s, 0, 0, s,
-                                         cx * (1 - s), cy * (1 - s)))
-
-                        is_double = cp in dw_set
-                        tw = double_width if is_double else mono_cell
-                        new_bbox = glyph.boundingBox()
-                        gw = new_bbox[2] - new_bbox[0]
-                        if gw > tw:
-                            sx = tw / gw * 0.95
-                            gcx = (new_bbox[0] + new_bbox[2]) / 2.0
-                            glyph.transform((sx, 0, 0, 1,
-                                             gcx * (1 - sx), 0))
-                            new_bbox = glyph.boundingBox()
-
-                        if gw > 0:
-                            ho = (tw / 2.0) - ((new_bbox[0] + new_bbox[2]) / 2.0)
-                            glyph.transform((1, 0, 0, 1, ho, 0))
-                        glyph.width = tw
-                        normalized += 1
-
-        print("Height normalization: ref_height=%.0f, threshold=%.0f, normalized %d glyphs"
-              % (ref_height, norm_threshold, normalized))
-
     target.os2_codepages = (target.os2_codepages[0] | (1 << 17) | (1 << 18), target.os2_codepages[1])
     target.generate(output_path)
     print("Saved: %s" % output_path)
