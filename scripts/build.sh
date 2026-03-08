@@ -5,14 +5,14 @@
 #   ./scripts/build.sh <config.yaml> [cjk_scale]
 #
 # Examples:
-#   ./scripts/build.sh config.helens.yaml 1.1
-#   ./scripts/build.sh config.baker.yaml 1.1
+#   ./scripts/build.sh config.helens.yaml 1.15
+#   ./scripts/build.sh config.baker.yaml 1.15
 
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 CONFIG="${1:?Usage: $0 <config.yaml> [cjk_scale]}"
-CJK_SCALE="${2:-1.1}"
+CJK_SCALE="${2:-1.15}"
 
 # Extract family name from config
 FAMILY=$(grep '^Family Name:' "$CONFIG" | sed 's/^Family Name: *//')
@@ -37,19 +37,19 @@ for style in "${STYLES[@]}"; do
     BASE_FILES+=("$(ls "${BASE_DIR}/${COMPACT}-${style}-"*.ttf 2>/dev/null | head -1)")
 done
 
-# ── Step 2: Merge CJK glyphs ──
+# ── Step 2: Merge CJK glyphs (parallel) ──
 echo ""
 echo "── Step 2: Merge CJK glyphs (Resource Han Rounded, scale ${CJK_SCALE}) ──"
 CJK_DIR=$(mktemp -d)
 trap "rm -rf '$CJK_DIR'" EXIT
 
-CJK_REGULAR="font-data/ResourceHanRoundedCN-Regular.ttf"
-CJK_BOLD="font-data/ResourceHanRoundedCN-Bold.ttf"
+CJK_REGULAR="font-data/ResourceHanRoundedCN-Light.ttf"
+CJK_BOLD="font-data/ResourceHanRoundedCN-Regular.ttf"
 
+PIDS=()
 for i in "${!STYLES[@]}"; do
     style="${STYLES[$i]}"
     base="${BASE_FILES[$i]}"
-    # Bold and BoldItalic use the Bold CJK source
     if [[ "$style" == Bold* ]]; then
         cjk_src="$CJK_BOLD"
     else
@@ -58,26 +58,32 @@ for i in "${!STYLES[@]}"; do
     echo "  Merging CJK into ${style}..."
     fontforge -script scripts/merge-cjk.py \
         "$base" "$cjk_src" \
-        "${CJK_DIR}/${COMPACT}-${style}.ttf" 0 "$CJK_SCALE" 2>&1 | grep -E "^(Saved|Height|Processed|Copied)"
+        "${CJK_DIR}/${COMPACT}-${style}.ttf" 0 "$CJK_SCALE" 2>&1 | grep -E "^(Saved|Height|Processed|Copied)" &
+    PIDS+=($!)
 done
+# Wait for all CJK merges to finish; fail if any failed
+for pid in "${PIDS[@]}"; do wait "$pid" || exit 1; done
+echo "  All CJK merges complete."
 
-# ── Step 3: Patch Nerd Font icons ──
+# ── Step 3: Patch Nerd Font icons (parallel) ──
 echo ""
 echo "── Step 3: Patch Nerd Font icons ──"
 NF_DIR=$(mktemp -d)
-# Update trap to clean both temp dirs
 trap "rm -rf '$CJK_DIR' '$NF_DIR'" EXIT
 
+PIDS=()
 for style in "${STYLES[@]}"; do
     echo "  Patching ${style}..."
     fontforge -script nerd-fonts-patcher/font-patcher --complete \
-        -out "$NF_DIR" "${CJK_DIR}/${COMPACT}-${style}.ttf" 2>&1 | tail -1
+        -out "$NF_DIR" "${CJK_DIR}/${COMPACT}-${style}.ttf" 2>&1 | tail -1 &
+    PIDS+=($!)
 done
+for pid in "${PIDS[@]}"; do wait "$pid" || exit 1; done
+echo "  All Nerd Font patches complete."
 
 # ── Step 4: Rename font family (strip "Nerd Font" suffix) ──
 echo ""
 echo "── Step 4: Rename font family ──"
-# Clean output dir (remove intermediate base fonts)
 rm -f "${BASE_DIR}/"*.ttf
 python3 scripts/rename-font-family.py "$FAMILY" "$NF_DIR" "$BASE_DIR"
 

@@ -2,129 +2,64 @@
 
 Custom builds of [Recursive](https://recursive.design) monospace fonts for coding, with CJK glyphs from [Resource Han Rounded (资源圆体)](https://github.com/CyanoHao/Resource-Han-Rounded) and [Nerd Font](https://www.nerdfonts.com/) icons.
 
-## Included Fonts
+## Fonts
 
-| Family | Regular Slant | Config |
+| Family | Slant (Regular / Italic) | Features |
 |---|---|---|
-| **Rec Mono Baker** | -6° | `config.baker.yaml` |
-| **Rec Mono St.Helens** | -4° | `config.helens.yaml` |
+| **Rec Mono Baker** | -6° / -15° | ss01–ss06, ss08–ss12 |
+| **Rec Mono St.Helens** | -4° / -10° | ss01–ss12 (all) |
 
-Both families are fully Casual (`CASL: 1`), Cursive (`CRSV: 1`), with all stylistic sets enabled and code ligatures on. Each includes Regular, Italic, Bold, and Bold Italic styles.
+Both families:
 
-### Pre-built Fonts
+- Fully **Casual** (`CASL: 1`) and **Cursive** (`CRSV: 1`)
+- Weight **400** (Regular/Italic), **600** (Bold/Bold Italic)
+- **Code ligatures** enabled
+- **CJK**: Resource Han Rounded — Light for Regular/Italic, Regular for Bold/Bold Italic, scaled 1.15×
+- **Nerd Font** icons (`--complete`)
+- 4 styles each: Regular, Italic, Bold, Bold Italic
 
-Ready-to-install `.ttf` files are in the `fonts/` directory:
+## Install
 
-```
-fonts/RecMonoBaker/        — Rec Mono Baker (4 styles)
-fonts/RecMonoSt.Helens/    — Rec Mono St.Helens (4 styles)
-```
+Download `.ttf` files from the [latest release](https://github.com/MOSconfig/recursive-code-config/releases/latest), then:
 
-## Installation
+- **macOS**: Copy to `~/Library/Fonts/`
+- **Linux**: Copy to `~/.local/share/fonts/` then `fc-cache -f`
+- **Windows**: Right-click → Install
 
-Copy the font files to your system font directory:
-
-- **macOS**: `cp fonts/RecMonoBaker/*.ttf fonts/RecMonoSt.Helens/*.ttf ~/Library/Fonts/`
-- **Linux**: `cp fonts/RecMono*/*.ttf ~/.local/share/fonts/ && fc-cache -f`
-- **Windows**: Right-click the `.ttf` files → Install
-
-In your editor, set the font family and enable ligatures. For example in VS Code:
-
-```json
-{
-  "editor.fontFamily": "Rec Mono St.Helens",
-  "editor.fontLigatures": true
-}
-```
-
-## Building from Source
+## Build from Source
 
 ### Prerequisites
 
-- **Python 3** with pip
-- **FontForge** with Python bindings
-  ```bash
-  brew install fontforge   # macOS
-  ```
-- Resource Han Rounded font files in `font-data/`:
-  - `ResourceHanRoundedCN-Regular.ttf`
-  - `ResourceHanRoundedCN-Bold.ttf`
-
-### Setup
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
+- Python 3, [FontForge](https://fontforge.org/) with Python bindings (`brew install fontforge`)
+- CJK fonts in `font-data/`: `ResourceHanRoundedCN-Light.ttf` and `ResourceHanRoundedCN-Regular.ttf` from [Resource Han Rounded](https://github.com/CyanoHao/Resource-Han-Rounded/releases)
 
 ### Build
 
-Each config is built with a single command. The build script runs all four stages automatically:
-
-1. Instantiate variable font into 4 static RIBBI styles
-2. Merge CJK glyphs (double-width) from Resource Han Rounded
-3. Patch Nerd Font icons (all icon sets)
-4. Rename font family (strip Nerd Font suffix)
-
 ```bash
-source venv/bin/activate
+python3 -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
 
-# Build St.Helens (CJK scale 1.1)
-./scripts/build.sh config.helens.yaml 1.1
+# Build all 8 fonts in parallel
+./scripts/build-all.sh
 
-# Build Baker (CJK scale 1.1)
-./scripts/build.sh config.baker.yaml 1.1
+# Or build one family
+./scripts/build.sh config.helens.yaml
+./scripts/build.sh config.baker.yaml
 ```
 
-The second argument is the CJK scale factor (default: `1.1`). This controls the relative size of CJK characters compared to Latin glyphs.
+The build pipeline (4 stages, fontforge steps parallelized):
 
-### Custom Configurations
+1. **Instantiate** — variable font → 4 static RIBBI styles
+2. **Merge CJK** — Resource Han Rounded glyphs (4 styles in parallel)
+3. **Nerd Font Patch** — full icon set (4 styles in parallel)
+4. **Rename** — strip "Nerd Font" suffix
 
-To create your own variant:
-
-1. Copy an existing config (e.g. `config.baker.yaml`) to a new file
-2. Edit the `Family Name`, axis values, and features
-3. Run `./scripts/build.sh your-config.yaml`
-
-See the config files for documentation on available axis values and stylistic sets.
-
-## Configuration Options
-
-### Variable Axes
-
-| Axis | Range | Description |
-|---|---|---|
-| `MONO` | 0–1 | 0 = Sans, 1 = Mono |
-| `CASL` | 0–1 | 0 = Linear, 1 = Casual |
-| `wght` | 300–1000 | Font weight |
-| `slnt` | 0 to -15 | Slant in degrees |
-| `CRSV` | 0–1 | 0 = Roman, 1 = Cursive |
-
-### Stylistic Sets
-
-| Feature | Description |
-|---|---|
-| `ss01` | Single-story a |
-| `ss02` | Single-story g |
-| `ss03` | Simplified f |
-| `ss04` | Simplified i |
-| `ss05` | Simplified l |
-| `ss06` | Simplified r |
-| `ss07` | Simplified k |
-| `ss08` | Serifless L and Z |
-| `ss09` | Simplified 6 and 9 |
-| `ss10` | Dotted 0 |
-| `ss11` | Simplified 1 |
-| `ss12` | Simplified @ |
+Default CJK scale is `1.15`. Override: `./scripts/build-all.sh 1.2`
 
 ## Credits
 
-- [Recursive](https://github.com/arrowtype/recursive) by Arrow Type
-- [Resource Han Rounded](https://github.com/CyanoHao/Resource-Han-Rounded) by CyanoHao
-- [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) by Ryan L McIntyre
-- Original [recursive-code-config](https://github.com/arrowtype/recursive-code-config) by Arrow Type
+[Recursive](https://github.com/arrowtype/recursive) by Arrow Type · [Resource Han Rounded](https://github.com/CyanoHao/Resource-Han-Rounded) by CyanoHao · [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts) by Ryan L McIntyre · Original [recursive-code-config](https://github.com/arrowtype/recursive-code-config) by Arrow Type
 
 ## License
 
-See [LICENSE](LICENSE) for the Recursive font license (SIL Open Font License).
+[SIL Open Font License](LICENSE)
