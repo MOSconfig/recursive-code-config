@@ -37,29 +37,29 @@ Family Name: Baker
 Fonts:
 
   Regular:
-    MONO: 0
-    CASL: 1
+    MONO: 1
+    CASL: 0
     wght: 400
     slnt: -4
     CRSV: 1
 
   Italic:
-    MONO: 0
-    CASL: 1
+    MONO: 1
+    CASL: 0
     wght: 400
     slnt: -10
     CRSV: 1
 
   Bold:
-    MONO: 0
-    CASL: 1
+    MONO: 1
+    CASL: 0
     wght: 600
     slnt: -4
     CRSV: 1
 
   Bold Italic:
-    MONO: 0
-    CASL: 1
+    MONO: 1
+    CASL: 0
     wght: 600
     slnt: -10
     CRSV: 1
@@ -108,7 +108,7 @@ Features:
 - ss07 # Simplified k
 - ss08 # Serifless L and Z
 - ss09 # Simplified 6 and 9
-- ss10 # Dotted 0
+# - ss10 # Dotted 0 (disabled — slashed 0 is clearer for proportional text)
 - ss11 # Simplified 1
 - ss12 # Simplified @
 

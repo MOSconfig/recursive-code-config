@@ -181,14 +181,19 @@ def splitFont(
         except KeyError:
             print("Font has no STAT table.")
 
-        # In the post table, isFixedPitched flag must be set in the code fonts
-        monoFont['post'].isFixedPitch = 1
+        isMono = fontOptions["Fonts"][instance]["MONO"] >= 0.5
 
-        # In the OS/2 table Panose bProportion must be set to 9
-        monoFont["OS/2"].panose.bProportion = 9
-
-        # Also in the OS/2 table, xAvgCharWidth should be set to 600 rather than 612 (612 is an average of glyphs in the "Mono" files which include wide ligatures).
-        monoFont["OS/2"].xAvgCharWidth = 600
+        if isMono:
+            # In the post table, isFixedPitched flag must be set in the code fonts
+            monoFont['post'].isFixedPitch = 1
+            # In the OS/2 table Panose bProportion must be set to 9
+            monoFont["OS/2"].panose.bProportion = 9
+            # xAvgCharWidth should be set to 600 (612 is skewed by wide ligatures)
+            monoFont["OS/2"].xAvgCharWidth = 600
+        else:
+            monoFont['post'].isFixedPitch = 0
+            # Panose bProportion 0 = Any (let OS figure it out for proportional)
+            monoFont["OS/2"].panose.bProportion = 0
 
         # Code to fix fsSelection adapted from:
         # https://github.com/googlefonts/gftools/blob/a0b516d71f9e7988dfa45af2d0822ec3b6972be4/Lib/gftools/fix.py#L764

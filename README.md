@@ -1,24 +1,24 @@
-# Rec Mono / Rec Sans Code Fonts
+# Rec Mono Code Fonts
 
-Custom builds of [Recursive](https://recursive.design) fonts for coding and daily use, with CJK glyphs from [Resource Han Rounded (资源圆体)](https://github.com/CyanoHao/Resource-Han-Rounded) and [Nerd Font](https://www.nerdfonts.com/) icons.
+Custom builds of [Recursive](https://recursive.design) monospace fonts for coding, with CJK glyphs from [Resource Han Rounded (资源圆体)](https://github.com/CyanoHao/Resource-Han-Rounded) and [Nerd Font](https://www.nerdfonts.com/) icons.
 
 ## Fonts
 
-| Family | Type | Slant (Regular / Italic) | Features |
+| Family | Style | Slant (Regular / Italic) | Features |
 |---|---|---|---|
-| **Rec Mono St.Helens** | Monospace (`MONO: 1`) | -4° / -10° | ss01–ss12 (all) |
-| **Rec Mono Baker** | Proportional (`MONO: 0`) | -4° / -10° | ss01–ss12 (all) |
+| **Rec Mono St.Helens** | Casual (`CASL: 1`) | -4° / -10° | ss01–ss12 (all) |
+| **Rec Mono Baker** | Linear (`CASL: 0`) | -4° / -10° | ss01–ss09, ss11–ss12 (no dotted 0) |
 
 Both families:
 
-- Fully **Casual** (`CASL: 1`) and **Cursive** (`CRSV: 1`)
+- **Monospace** (`MONO: 1`) and **Cursive** (`CRSV: 1`)
 - Weight **400** (Regular/Italic), **600** (Bold/Bold Italic)
 - **Code ligatures** enabled
-- **CJK**: Resource Han Rounded — Regular for Regular/Italic, Bold for Bold/Bold Italic, scaled 1.15×
+- **CJK**: Resource Han Rounded — Light for Regular/Italic, Regular for Bold/Bold Italic, scaled 1.15×
 - **Nerd Font** icons (`--complete`)
 - 4 styles each: Regular, Italic, Bold, Bold Italic
 
-**St.Helens** is the monospace variant for code editors and terminals. **Baker** is the proportional variant for UI, notes, and general reading.
+**St.Helens** is the casual (handwritten) variant. **Baker** is the linear (geometric) variant.
 
 ## Install
 
@@ -33,7 +33,7 @@ Download `.ttf` files from the [latest release](https://github.com/MOSconfig/rec
 ### Prerequisites
 
 - Python 3, [FontForge](https://fontforge.org/) with Python bindings (`brew install fontforge`)
-- CJK fonts in `font-data/`: `ResourceHanRoundedCN-Regular.ttf` and `ResourceHanRoundedCN-Bold.ttf` from [Resource Han Rounded](https://github.com/CyanoHao/Resource-Han-Rounded/releases)
+- CJK fonts in `font-data/`: `ResourceHanRoundedCN-Light.ttf` and `ResourceHanRoundedCN-Regular.ttf` from [Resource Han Rounded](https://github.com/CyanoHao/Resource-Han-Rounded/releases)
 
 ### Build
 
@@ -52,7 +52,7 @@ pip install -r requirements.txt
 The build pipeline (4 stages, fontforge steps parallelized):
 
 1. **Instantiate** — variable font → 4 static RIBBI styles
-2. **Merge CJK** — Resource Han Rounded glyphs: Regular for Regular/Italic, Bold for Bold/Bold Italic (4 styles in parallel)
+2. **Merge CJK** — Resource Han Rounded glyphs: Light for Regular/Italic, Regular for Bold/Bold Italic (4 styles in parallel)
 3. **Nerd Font Patch** — full icon set (4 styles in parallel)
 4. **Rename** — strip "Nerd Font" suffix
 

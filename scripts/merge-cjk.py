@@ -59,8 +59,13 @@ def merge_cjk(target_path, cjk_source_path, output_path, embolden=0, cjk_scale=1
     if cjk_scale != 1.0:
         print("CJK scale factor: %.2f" % cjk_scale)
 
-    mono_cell = 600
+    # Derive single-cell width from target font's space glyph
+    if 0x20 in target and target[0x20].isWorthOutputting():
+        mono_cell = target[0x20].width
+    else:
+        mono_cell = 600
     double_width = mono_cell * 2
+    print("Reference cell width: %d, CJK double width: %d" % (mono_cell, double_width))
 
     target_ascender = target.os2_typoascent
     target_descender = target.os2_typodescent

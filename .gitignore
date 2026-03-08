@@ -5,3 +5,7 @@ __pycache__/
 *.pyc
 *.zip
 fonts/
+font-data/SourceHan*
+font-data/msyh*
+font-data/ResourceHanRoundedCN-ExtraLight.ttf
+font-data/ResourceHanRoundedCN-Bold.ttf
