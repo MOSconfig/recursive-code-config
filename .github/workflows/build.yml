@@ -1,0 +1,77 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_call:
+    outputs:
+      artifact_name:
+        description: "Name of the uploaded artifact"
+        value: ${{ jobs.build.outputs.artifact_name }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      artifact_name: fonts-${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install FontForge + p7zip (system Python)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fontforge python3-fontforge p7zip-full
+
+      # Use system Python (NOT actions/setup-python) so python3-fontforge
+      # bindings are importable. Venv with --system-site-packages inherits
+      # them. Build scripts use fontforge -script (FontForge's bundled
+      # Python) for the FontForge-only steps, and venv Python for the rest.
+      - name: Create venv + install Python deps
+        run: |
+          /usr/bin/python3 -m venv --system-site-packages venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Fetch Resource Han Rounded CN (pinned v0.990)
+        run: |
+          mkdir -p font-data
+          curl -fSL -o /tmp/rhr-cn.7z \
+            https://github.com/CyanoHao/Resource-Han-Rounded/releases/download/v0.990/RHR-CN-0.990.7z
+          7z x -o/tmp/rhr-cn /tmp/rhr-cn.7z
+          # Asset layout: archive contains ResourceHanRoundedCN-{Light,Regular,Bold,...}.ttf
+          find /tmp/rhr-cn -name 'ResourceHanRoundedCN-*.ttf' -exec cp {} font-data/ \;
+          ls -la font-data/ResourceHanRoundedCN-*.ttf
+
+      - name: Build all fonts
+        run: |
+          source venv/bin/activate
+          ./scripts/build-all.sh
+
+      - name: Verify monospace normalization
+        run: |
+          source venv/bin/activate
+          python3 -c "
+          from fontTools.ttLib import TTFont; import glob, sys
+          files = sorted(glob.glob('fonts/*/*.ttf'))
+          assert len(files) == 8, f'expected 8 TTFs, got {len(files)}'
+          for p in files:
+              f = TTFont(p)
+              assert f['post'].isFixedPitch == 1, f'{p}: isFixedPitch != 1'
+              assert not (f['head'].flags & 0x10), f'{p}: head.flags bit 4 set'
+              hmtx = f['hmtx']; cmap = f.getBestCmap()
+              widths = {hmtx[cmap[c]][0] for c in range(0x20, 0x7f) if c in cmap}
+              assert widths == {600}, f'{p}: non-uniform ASCII widths {widths}'
+          print(f'OK: {len(files)} TTFs verified monospace.')
+          "
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: fonts-${{ github.sha }}
+          path: |
+            fonts/RecMonoBaker/*.ttf
+            fonts/RecMonoSt.Helens/*.ttf
+          retention-days: 14
