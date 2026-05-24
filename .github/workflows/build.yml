@@ -33,7 +33,12 @@ jobs:
           /usr/bin/python3 -m venv --system-site-packages venv
           source venv/bin/activate
           pip install --upgrade pip
-          pip install -r requirements.txt
+          # skia-pathops==0.7.4 (2022, no PEP 517 build-system declared)
+          # imports pkg_resources from setuptools in its setup.py. Modern
+          # setuptools (>=81) dropped pkg_resources, breaking the build.
+          # Force the isolated build env to use a setuptools that still
+          # ships it.
+          PIP_CONSTRAINT=<(echo "setuptools<81") pip install -r requirements.txt
 
       - name: Fetch Resource Han Rounded CN (pinned v0.990)
         run: |
