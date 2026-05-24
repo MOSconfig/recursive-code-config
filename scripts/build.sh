@@ -87,6 +87,11 @@ echo "── Step 4: Rename font family ──"
 rm -f "${BASE_DIR}/"*.ttf
 python3 scripts/rename-font-family.py "$FAMILY" "$NF_DIR" "$BASE_DIR"
 
+# ── Step 5: Normalize monospace flags for Windows Terminal / DirectWrite ──
+echo ""
+echo "── Step 5: Normalize monospace flags ──"
+python3 scripts/normalize-monospace.py "${BASE_DIR}/"*.ttf
+
 echo ""
 echo "=== Done! Fonts saved to ${BASE_DIR}/ ==="
 ls -lh "${BASE_DIR}/"*.ttf
