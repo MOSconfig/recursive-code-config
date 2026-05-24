@@ -1,5 +1,10 @@
 # Rec Mono Code Fonts
 
+[![Release](https://img.shields.io/github/v/release/MOSconfig/recursive-code-config?sort=semver)](https://github.com/MOSconfig/recursive-code-config/releases/latest)
+[![Build](https://img.shields.io/github/actions/workflow/status/MOSconfig/recursive-code-config/build.yml?branch=main)](https://github.com/MOSconfig/recursive-code-config/actions/workflows/build.yml)
+[![License: OFL-1.1](https://img.shields.io/badge/License-OFL_1.1-lightgreen.svg)](LICENSE)
+[![Downloads](https://img.shields.io/github/downloads/MOSconfig/recursive-code-config/total)](https://github.com/MOSconfig/recursive-code-config/releases)
+
 Custom builds of [Recursive](https://recursive.design) monospace fonts for coding, with CJK glyphs from [Resource Han Rounded (资源圆体)](https://github.com/CyanoHao/Resource-Han-Rounded) and [Nerd Font](https://www.nerdfonts.com/) icons.
 
 ## Fonts
@@ -57,6 +62,17 @@ The build pipeline (4 stages, fontforge steps parallelized):
 4. **Rename** — strip "Nerd Font" suffix
 
 Default CJK scale is `1.15`. Override: `./scripts/build-all.sh 1.2`
+
+## Release
+
+Releases are automated. Push a SemVer tag and CI builds + publishes:
+
+```bash
+git tag v1.2.3
+git push --tags
+```
+
+The `release` workflow rebuilds all 8 TTFs from source and attaches them to a new GitHub release with auto-generated notes. Every push and PR also runs the `build` workflow as a smoke test.
 
 ## Credits
 
